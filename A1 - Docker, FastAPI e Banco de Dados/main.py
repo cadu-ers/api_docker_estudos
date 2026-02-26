@@ -4,22 +4,26 @@ from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "db")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-POSTGRES_DB = os.getenv("POSTGRES_DB")
+# ====== MariaDB env vars ======
+MARIADB_USER = os.getenv("MARIADB_USER")
+MARIADB_PASSWORD = os.getenv("MARIADB_PASSWORD")
+MARIADB_HOST = os.getenv("MARIADB_HOST", "db")
+MARIADB_PORT = os.getenv("MARIADB_PORT", "3306")
+MARIADB_DATABASE = os.getenv("MARIADB_DATABASE")
 
 DATABASE_URL = (
-    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-    f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+    f"mysql+pymysql://{MARIADB_USER}:{MARIADB_PASSWORD}"
+    f"@{MARIADB_HOST}:{MARIADB_PORT}/{MARIADB_DATABASE}"
 )
 
-engine = create_engine(DATABASE_URL)
+# pool_pre_ping ajuda quando o DB reinicia/demora a responder
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 app = FastAPI(title="FastAPI Users API")
+
 
 class User(Base):
     __tablename__ = "users"
@@ -27,15 +31,18 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(80), nullable=False)
 
+
 class UserCreate(BaseModel):
     name: str
+
 
 class UserResponse(BaseModel):
     id: int
     name: str
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
 
 def get_db():
     db = SessionLocal()
@@ -43,6 +50,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 @app.post("/users", response_model=UserResponse, status_code=201)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -52,9 +60,11 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
+
 @app.get("/users", response_model=list[UserResponse])
 def list_users(db: Session = Depends(get_db)):
     return db.query(User).all()
+
 
 @app.on_event("startup")
 def startup():
