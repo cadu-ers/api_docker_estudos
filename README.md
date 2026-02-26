@@ -1,3 +1,15 @@
+## Descrição do Repositório
+
+Este repositório contém a implementação dos cenários práticos desenvolvidos na disciplina de Docker, FastAPI e Banco de Dados.
+
+O objetivo deste projeto é exclusivamente acadêmico, voltado ao estudo de conceitos relacionados a containerização, comunicação entre serviços, gerenciamento de banco de dados e integração com aplicações backend.
+
+As atividades foram propostas pelo Professor **Victor Hugo Braguim Canto**, docente universitário e Engenheiro de Software, e estão sendo utilizadas como base para aprofundamento técnico e prática em ambiente Docker.
+
+Este repositório não possui fins comerciais e tem caráter exclusivamente educacional.
+
+---
+
 ### Cenário 1
 
 **Tarefa:** Alterar o banco de dados para o MariaDB
