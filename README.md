@@ -10,7 +10,7 @@ Este repositório não possui fins comerciais e tem caráter exclusivamente educ
 
 ---
 
-### Cenário 1
+## Cenário 1
 
 **Tarefa:** Alterar o banco de dados para o MariaDB
 
@@ -100,18 +100,81 @@ No entanto, alguns impactos técnicos foram observados:
 
 Após os ajustes estruturais e de inicialização, a aplicação voltou a operar normalmente, utilizando MariaDB como sistema gerenciador de banco de dados.
 
+
+
+## Cenário 2
+
+Tarefa: Alterar a porta da aplicação de 8000 para 9000
+O que precisou ser alterado?
+
 ---
 
 
+Para alterar a porta de execução da aplicação, foi necessário realizar modificações na camada de infraestrutura da aplicação, especificamente no arquivo docker-compose.yaml, responsável por definir como os containers são executados.
 
-### Cenário 2
+#### 1. Infraestrutura (Docker Compose)
 
-Tarefa: Alterar a porta da aplicação de 8000 para 9000
+A aplicação FastAPI é executada dentro do container utilizando o servidor Uvicorn, que estava configurado para rodar na porta `8000`. Para alterar a porta para `9000`, foram necessárias duas modificações principais.
 
-#### Perguntas
+#### Alteração da porta no comando de execução da aplicação:
 
-- O que precisou ser alterado?
-- Qual foi o impacto na aplicação?
+---
+
+Antes:
+
+`uvicorn main:app --host 0.0.0.0 --port 8000 --reload`
+
+Depois:
+
+`uvicorn main:app --host 0.0.0.0 --port 9000 --reload`
+
+Essa alteração define que o servidor da aplicação dentro do container passará a escutar na porta 9000.
+
+---
+
+#### Alteração do mapeamento de portas no Docker Compose:
+
+#### Antes:
+
+ports:
+`"8000:8000"`
+
+#### Depois:
+
+ports:
+`"9000:9000"`
+
+---
+
+
+O mapeamento de portas define qual porta do host (máquina local) será vinculada à porta do container.
+Com essa alteração, a aplicação passou a ser acessível pela porta 9000.
+
+Após as alterações, foi necessário reconstruir e iniciar novamente os containers utilizando:
+
+`docker compose down`
+`docker compose up --build`
+
+---
+
+Qual foi o impacto na aplicação?
+
+A alteração teve impacto apenas na forma de acesso à aplicação, não afetando a lógica interna da API.
+
+Anteriormente, a aplicação era acessada por meio do endereço:
+
+http://localhost:8000
+
+Após a modificação, o acesso passou a ocorrer através de:
+
+http://localhost:9000
+
+A estrutura da aplicação, incluindo rotas, modelos ORM, conexão com o banco de dados e regras de negócio, permaneceu inalterada.
+
+Portanto, o impacto foi apenas na configuração de rede da aplicação, permitindo que o serviço passasse a responder em uma nova porta definida pelo Docker Compose.
+
+---
+
 
 ### Cenário 3
 
